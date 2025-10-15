@@ -22,10 +22,6 @@ jobs:
     env:
       ARM_ACCESS_KEY: ${{ secrets.ACCOUNT_KEY }}
     
-    defaults:
-      run:
-        working-directory: terraform
-
     steps:  
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -41,20 +37,20 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Terraform Init
-        run: terraform init
+        run: terraform -chdir=terraform init
 
       - name: Terraform Workspace
-        run: terraform workspace select -or-create ${{ matrix.environment }}
+        run: terraform -chdir=terraform workspace select -or-create ${{ matrix.environment }}
 
       - name: Terraform Fmt Check
-        run: terraform fmt -check
+        run: terraform -chdir=terraform fmt -check
 
       - name: Terraform Validate
-        run: terraform validate
+        run: terraform -chdir=terraform validate
           
       - name: Terraform Plan
         run: |
-          terraform plan \
+          terraform -chdir=terraform plan \
             -var "subscription_id=${{ vars.AZURE_SUBSCRIPTION_ID }}" \
             -var "resource_group_name=${{ vars.TF_RESOURCE_GROUP_NAME }}" \
             -var "acr_name=${{ vars.TF_ACR_NAME }}" \
@@ -65,7 +61,7 @@ jobs:
 
       - name: Terraform Apply
         if: github.event_name == 'push'
-        run: terraform apply -auto-approve tfplan-${{ matrix.environment }}
+        run: terraform -chdir=terraform apply -auto-approve tfplan-${{ matrix.environment }}
 
       - name: Setup Go for Terratest
         if: github.event_name == 'push'
@@ -76,13 +72,12 @@ jobs:
       - name: Install Terratest Dependencies
         if: github.event_name == 'push'
         run: |
-          cd ../tests
-          go mod tidy
+          go mod tidy ./tests
 
       - name: Run Terratest
+        if: github.event_name == 'push'
         run: |
-          cd tests
-          go test -v ./ \
+          go test -v ./tests/ \
             -args \
             resource_group_name=${{ vars.TF_RESOURCE_GROUP_NAME }} \
             acr_name=${{ vars.TF_ACR_NAME }} \
