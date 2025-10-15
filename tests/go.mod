@@ -1,8 +1,7 @@
 module terraform-infra-azure-public/tests
 
-go 1.24.0
+go 1.20
 
-toolchain go1.24.9
 
 require (
 	github.com/gruntwork-io/terratest v0.51.0
