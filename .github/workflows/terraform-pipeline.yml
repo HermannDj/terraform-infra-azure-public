@@ -2,11 +2,9 @@ name: Terraform Pipeline with Terratest
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   terraform:
@@ -83,12 +81,14 @@ jobs:
 
       # Install Terratest dependencies
       - name: Install Terratest Dependencies
-        run: go mod tidy -C ../tests
+        working-directory: ../tests
+        run: go mod tidy
 
       # Run Terratest
       - name: Run Terratest
-        run: go test -v ../tests/ \
-          -args \
-          resource_group_name=${{ vars.TF_RESOURCE_GROUP_NAME }} \
-          acr_name=${{ vars.TF_ACR_NAME }} \
-          location="${{ vars.TF_LOCATION }}"
+        working-directory: ../tests
+        run: |
+          go test -v . -args \
+            resource_group_name=${{ vars.TF_RESOURCE_GROUP_NAME }} \
+            acr_name=${{ vars.TF_ACR_NAME }} \
+            location="${{ vars.TF_LOCATION }}"
