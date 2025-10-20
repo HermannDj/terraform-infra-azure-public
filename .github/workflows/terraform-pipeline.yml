@@ -16,7 +16,7 @@ jobs:
         environment: [test, production]
 
     environment: ${{ matrix.environment }}
-    
+
     env:
       ARM_ACCESS_KEY: ${{ secrets.ACCOUNT_KEY }}
     
@@ -25,38 +25,38 @@ jobs:
         working-directory: terraform
 
     steps:
-      # Checkout the repo
+      # 🧾 Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v3
           
-      # Setup Terraform
+      # ⚙️ Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: latest
 
-      # Azure login
+      # 🔐 Azure login
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Terraform Init
+      # 🧩 Terraform Init
       - name: Terraform Init
         run: terraform init
 
-      # Select or create workspace
+      # 🧱 Select or create workspace
       - name: Terraform Workspace
         run: terraform workspace select -or-create ${{ matrix.environment }}
 
-      # Formatting and validation
+      # 🧹 Formatting and validation
       - name: Terraform Fmt Check
         run: terraform fmt -check
 
       - name: Terraform Validate
         run: terraform validate
 
-      # Terraform Plan
+      # 🧭 Terraform Plan
       - name: Terraform Plan
         run: |
           terraform plan \
@@ -68,25 +68,25 @@ jobs:
             -var "location=${{ vars.TF_LOCATION }}" \
             -out=tfplan-${{ matrix.environment }}
 
-      # Terraform Apply (only on push)
+      # 🚀 Terraform Apply (only on push)
       - name: Terraform Apply
         if: github.event_name == 'push'
         run: terraform apply -auto-approve tfplan-${{ matrix.environment }}
 
-      # Setup Go for Terratest
+      # 🧰 Setup Go for Terratest
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.20'
 
-      # Install Terratest dependencies
+      # 📦 Install Terratest dependencies
       - name: Install Terratest Dependencies
-        working-directory: ../tests
+        working-directory: ${{ github.workspace }}/tests
         run: go mod tidy
 
-      # Run Terratest
+      # 🧪 Run Terratest
       - name: Run Terratest
-        working-directory: ../tests
+        working-directory: ${{ github.workspace }}/tests
         run: |
           go test -v . -args \
             resource_group_name=${{ vars.TF_RESOURCE_GROUP_NAME }} \
