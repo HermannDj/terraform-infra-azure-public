@@ -16,7 +16,7 @@ jobs:
         environment: [test, production]
 
     environment: ${{ matrix.environment }}
-
+    
     env:
       ARM_ACCESS_KEY: ${{ secrets.ACCOUNT_KEY }}
     
@@ -73,11 +73,11 @@ jobs:
         if: github.event_name == 'push'
         run: terraform apply -auto-approve tfplan-${{ matrix.environment }}
 
-      # 🧰 Setup Go for Terratest
+      # 🧰 Setup Go for Terratest (✅ upgraded to Go 1.23)
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.23'
 
       # 📦 Install Terratest dependencies
       - name: Install Terratest Dependencies
